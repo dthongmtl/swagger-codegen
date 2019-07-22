@@ -3653,6 +3653,14 @@ public class DefaultCodegen {
         return booleanValue;
     }
 
+    protected String getOrDefaultFromAdditionalProperties(String keyName, String defaultValue) {
+        String result = (String) additionalProperties.get(keyName);
+        if (result == null || result.isEmpty()) {
+            return defaultValue;
+        }
+        return result;
+    }
+
     public void writePropertyBack(String propertyKey, boolean value) {
         additionalProperties.put(propertyKey, value);
     }

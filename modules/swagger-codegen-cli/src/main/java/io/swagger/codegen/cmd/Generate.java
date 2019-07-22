@@ -51,13 +51,6 @@ public class Generate implements Runnable {
     private String auth;
 
     @Option(
-            name = {"-D"},
-            title = "system properties",
-            description = "sets specified system properties in "
-                    + "the format of name=value,name=value (or multiple options, each with name=value)")
-    private List<String> systemProperties = new ArrayList<>();
-
-    @Option(
             name = {"-c", "--config"},
             title = "configuration file",
             description = "Path to json configuration file. "
@@ -273,7 +266,6 @@ public class Generate implements Runnable {
             configurator.setRemoveOperationIdPrefix(removeOperationIdPrefix);
         }
 
-        applySystemPropertiesKvpList(systemProperties, configurator);
         applyInstantiationTypesKvpList(instantiationTypes, configurator);
         applyImportMappingsKvpList(importMappings, configurator);
         applyTypeMappingsKvpList(typeMappings, configurator);

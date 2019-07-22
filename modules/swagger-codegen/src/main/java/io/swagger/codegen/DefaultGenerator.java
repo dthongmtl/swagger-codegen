@@ -1,25 +1,53 @@
 package io.swagger.codegen;
 
-import com.samskivert.mustache.Mustache;
-import com.samskivert.mustache.Template;
 import io.swagger.codegen.ignore.CodegenIgnoreProcessor;
-import io.swagger.codegen.utils.ImplementationVersion;
 import io.swagger.codegen.languages.AbstractJavaCodegen;
-import io.swagger.models.*;
+import io.swagger.codegen.utils.ImplementationVersion;
+import io.swagger.models.ComposedModel;
+import io.swagger.models.Contact;
+import io.swagger.models.Info;
+import io.swagger.models.License;
+import io.swagger.models.Model;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
+import io.swagger.models.RefModel;
+import io.swagger.models.SecurityRequirement;
+import io.swagger.models.Swagger;
 import io.swagger.models.auth.OAuth2Definition;
 import io.swagger.models.auth.SecuritySchemeDefinition;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.util.Json;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.commons.lang3.StringUtils;
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
 
 public class DefaultGenerator extends AbstractGenerator implements Generator {
     protected final Logger LOGGER = LoggerFactory.getLogger(DefaultGenerator.class);
@@ -91,30 +119,16 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
     private void configureGeneratorProperties() {
 
         // allows generating only models by specifying a CSV of models to generate, or empty for all
-        generateApis = System.getProperty("apis") != null ? true:null;
-        generateModels = System.getProperty("models") != null ? true: null;
-        generateSupportingFiles = System.getProperty("supportingFiles") != null ? true:null;
+        generateApis = getFlag(CodegenConstants.GENERATE_APIS, Boolean.TRUE);
+        generateModels = getFlag(CodegenConstants.GENERATE_MODELS, Boolean.TRUE);
+        generateSupportingFiles = getFlag(CodegenConstants.GENERATE_SUPPORTING_FILES, Boolean.TRUE);
 
-        if (generateApis == null && generateModels == null && generateSupportingFiles == null) {
-            // no specifics are set, generate everything
-            generateApis = generateModels = generateSupportingFiles = true;
-        } else {
-            if(generateApis == null) {
-                generateApis = false;
-            }
-            if(generateModels == null) {
-                generateModels = false;
-            }
-            if(generateSupportingFiles == null) {
-                generateSupportingFiles = false;
-            }
-        }
         // model/api tests and documentation options rely on parent generate options (api or model) and no other options.
         // They default to true in all scenarios and can only be marked false explicitly
-        generateModelTests = System.getProperty("modelTests") != null ? Boolean.valueOf(System.getProperty("modelTests")): true;
-        generateModelDocumentation = System.getProperty("modelDocs") != null ? Boolean.valueOf(System.getProperty("modelDocs")):true;
-        generateApiTests = System.getProperty("apiTests") != null ? Boolean.valueOf(System.getProperty("apiTests")): true;
-        generateApiDocumentation = System.getProperty("apiDocs") != null ? Boolean.valueOf(System.getProperty("apiDocs")):true;
+        generateModelTests = getFlag(CodegenConstants.GENERATE_MODEL_TESTS, Boolean.TRUE);
+        generateModelDocumentation = getFlag(CodegenConstants.GENERATE_MODEL_DOCS, Boolean.TRUE);
+        generateApiTests = getFlag(CodegenConstants.GENERATE_API_TESTS, Boolean.TRUE);
+        generateApiDocumentation = getFlag(CodegenConstants.GENERATE_API_DOCS, Boolean.TRUE);
 
 
         // Additional properties added for tests to exclude references in project related files
@@ -127,7 +141,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         if(!generateApiTests && !generateModelTests) {
             config.additionalProperties().put(CodegenConstants.EXCLUDE_TESTS, true);
         }
-        if (System.getProperty("debugSwagger") != null) {
+        if (getFlag(CodegenConstants.DEBUG_SWAGGER, Boolean.FALSE)) {
             Json.prettyPrint(swagger);
         }
         config.processOpts();
@@ -143,7 +157,19 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         contextPath = config.escapeText(swagger.getBasePath() == null ? "" : swagger.getBasePath());
         basePath = config.escapeText(getHost());
         basePathWithoutHost = config.escapeText(swagger.getBasePath());
+    }
 
+    private Boolean getFlag(final String additionalPropertyKey, Boolean defaultValue) {
+        if (!config.additionalProperties().containsKey(additionalPropertyKey) || config.additionalProperties().get(additionalPropertyKey) == null) {
+            LOGGER.debug("additional property["+additionalPropertyKey+"] is not present or null, defaulting to " + defaultValue);
+            return defaultValue;
+        }
+        LOGGER.debug("additional property["+additionalPropertyKey+"]=" + config.additionalProperties().get(additionalPropertyKey));
+        return (Boolean) config.additionalProperties().get(additionalPropertyKey);
+    }
+
+    private String getValue(final String additionalPropertyKey) {
+        return (String) config.additionalProperties().get(additionalPropertyKey);
     }
 
     private void configureSwaggerInfo() {
@@ -200,6 +226,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
 
     private void generateModelTests(List<File> files, Map<String, Object> models, String modelName) throws IOException{
         // to generate model test files
+        LOGGER.debug("BEGIN generateModelTests");
         for (String templateName : config.modelTestTemplateFiles().keySet()) {
             String suffix = config.modelTestTemplateFiles().get(templateName);
             String filename = config.modelTestFileFolder() + File.separator + config.toModelTestFilename(modelName) + suffix;
@@ -213,9 +240,11 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 files.add(written);
             }
         }
+        LOGGER.debug("END generateModelTests");
     }
 
     private void generateModelDocumentation(List<File> files, Map<String, Object> models, String modelName) throws IOException {
+        LOGGER.debug("BEGIN generateModelDocumentation");
         for (String templateName : config.modelDocTemplateFiles().keySet()) {
             String suffix = config.modelDocTemplateFiles().get(templateName);
             String filename = config.modelDocFileFolder() + File.separator + config.toModelDocFilename(modelName) + suffix;
@@ -228,10 +257,11 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 files.add(written);
             }
         }
+        LOGGER.debug("END generateModelDocumentation");
     }
 
     private void generateModels(List<File> files, List<Object> allModels) {
-
+        LOGGER.debug("BEGIN generateModels");
         if (!generateModels) {
             return;
         }
@@ -241,7 +271,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
             return;
         }
 
-        String modelNames = System.getProperty("models");
+        String modelNames = getValue(CodegenConstants.MODELS_TO_GENERATE);
         Set<String> modelsToGenerate = null;
         if(modelNames != null && !modelNames.isEmpty()) {
             modelsToGenerate = new HashSet<String>(Arrays.asList(modelNames.split(",")));
@@ -374,20 +404,21 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 throw new RuntimeException("Could not generate model '" + modelName + "'", e);
             }
         }
-        if (System.getProperty("debugModels") != null) {
+        if (getFlag(CodegenConstants.DEBUG_MODELS, Boolean.FALSE)) {
             LOGGER.info("############ Model info ############");
             Json.prettyPrint(allModels);
         }
-
+        LOGGER.debug("END generateModels");
     }
 
     private void generateApis(List<File> files, List<Object> allOperations) {
+        LOGGER.debug("BEGIN generateApis");
         if (!generateApis) {
             return;
         }
         Map<String, List<CodegenOperation>> paths = processPaths(swagger.getPaths());
         Set<String> apisToGenerate = null;
-        String apiNames = System.getProperty("apis");
+        String apiNames = getValue(CodegenConstants.APIS);
         if(apiNames != null && !apiNames.isEmpty()) {
             apisToGenerate = new HashSet<String>(Arrays.asList(apiNames.split(",")));
         }
@@ -495,21 +526,24 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 throw new RuntimeException("Could not generate api file for '" + tag + "'", e);
             }
         }
-        if (System.getProperty("debugOperations") != null) {
+        if (getFlag(CodegenConstants.DEBUG_OPERATIONS, Boolean.FALSE)) {
             LOGGER.info("############ Operation info ############");
             Json.prettyPrint(allOperations);
         }
-
+        LOGGER.debug("END generateApis");
     }
 
     private void generateSupportingFiles(List<File> files, Map<String, Object> bundle) {
+        LOGGER.debug("BEGIN generateSupportingFiles");
         if (!generateSupportingFiles) {
             return;
         }
         Set<String> supportingFilesToGenerate = null;
-        String supportingFiles = System.getProperty("supportingFiles");
-        if(supportingFiles!= null && !supportingFiles.isEmpty()) {
-            supportingFilesToGenerate = new HashSet<String>(Arrays.asList(supportingFiles.split(",")));
+        if (getFlag(CodegenConstants.GENERATE_SUPPORTING_FILES, Boolean.FALSE)) {
+            String supportingFiles = getValue(CodegenConstants.SUPPORTING_FILES);
+            if(supportingFiles!= null && !supportingFiles.isEmpty()) {
+                supportingFilesToGenerate = new HashSet<String>(Arrays.asList(supportingFiles.split(",")));
+            }
         }
 
         for (SupportingFile support : config.supportingFiles()) {
@@ -630,11 +664,11 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         }
         files.add(licenseFile);
          */
-
+        LOGGER.debug("END generateSupportingFiles");
     }
 
     private Map<String, Object> buildSupportFileBundle(List<Object> allOperations, List<Object> allModels) {
-
+        LOGGER.debug("BEGIN buildSupportFileBundle");
         Map<String, Object> bundle = new HashMap<String, Object>();
         bundle.putAll(config.additionalProperties());
         bundle.put("apiPackage", config.apiPackage());
@@ -671,16 +705,17 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
 
         config.postProcessSupportingFileData(bundle);
 
-        if (System.getProperty("debugSupportingFiles") != null) {
+        if (getFlag(CodegenConstants.DEBUG_SUPPORTING_FILES, Boolean.FALSE)) {
             LOGGER.info("############ Supporting file info ############");
             Json.prettyPrint(bundle);
         }
+        LOGGER.debug("END buildSupportFileBundle");
         return bundle;
     }
 
     @Override
     public List<File> generate() {
-
+        LOGGER.debug("BEGIN generate");
         if (swagger == null || config == null) {
             throw new RuntimeException("missing swagger input or config!");
         }
@@ -703,6 +738,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         Map<String, Object> bundle = buildSupportFileBundle(allOperations, allModels);
         generateSupportingFiles(files, bundle);
         config.processSwagger(swagger);
+        LOGGER.debug("END generate");
         return files;
     }
 
@@ -773,7 +809,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
         if (operation == null) {
             return;
         }
-        if (System.getProperty("debugOperations") != null) {
+        if (getFlag(CodegenConstants.DEBUG_OPERATIONS, Boolean.FALSE)) {
             LOGGER.info("processOperation: resourcePath= " + resourcePath + "\t;" + httpMethod + " " + operation + "\n");
         }
         List<String> tags = operation.getTags();

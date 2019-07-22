@@ -11,6 +11,8 @@ import com.google.common.collect.Multimap;
 import io.swagger.codegen.*;
 import io.swagger.models.*;
 import io.swagger.util.Yaml;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,7 +288,7 @@ public class NodeJSServerCodegen extends DefaultCodegen implements CodegenConfig
         }
         writeOptional(outputFolder, new SupportingFile("package.mustache", "", "package.json"));
         writeOptional(outputFolder, new SupportingFile("README.mustache", "", "README.md"));
-        if (System.getProperty("noservice") == null) {
+        if (additionalProperties.containsKey("noservice")) {
             apiTemplateFiles.put(
                     "service.mustache",   // the template to use
                     "Service.js");       // the extension for each file to write

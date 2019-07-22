@@ -1,5 +1,10 @@
 package io.swagger.codegen;
 
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
 /**
  * A class for storing constants that are used throughout the project.
  */
@@ -153,6 +158,7 @@ public class CodegenConstants {
     public static final String MODEL_NAME_SUFFIX = "modelNameSuffix";
     public static final String MODEL_NAME_SUFFIX_DESC = "Suffix that will be appended to all model names. Default is the empty string.";
 
+
     public static final String OPTIONAL_EMIT_DEFAULT_VALUES = "optionalEmitDefaultValues";
     public static final String OPTIONAL_EMIT_DEFAULT_VALUES_DESC = "Set DataMember's EmitDefaultValue.";
 
@@ -175,12 +181,17 @@ public class CodegenConstants {
     public static final String EXCLUDE_TESTS_DESC = "Specifies that no tests are to be generated.";
 
     // Not user-configurable. System provided for use in templates.
+    public static final String GENERATE_APIS = "generateApis";
     public static final String GENERATE_API_DOCS = "generateApiDocs";
+    public static final String GENERATE_SUPPORTING_FILES = "generateSupportingFiles";
+    public static final String SUPPORTING_FILES = "supportingFiles";
 
     public static final String GENERATE_API_TESTS = "generateApiTests";
     public static final String GENERATE_API_TESTS_DESC = "Specifies that api tests are to be generated.";
 
     // Not user-configurable. System provided for use in templates.
+    public static final String GENERATE_MODELS = "generateModels";
+    public static final String MODELS_TO_GENERATE = "modelsToGenerate";
     public static final String GENERATE_MODEL_DOCS = "generateModelDocs";
 
     public static final String GENERATE_MODEL_TESTS = "generateModelTests";
@@ -200,4 +211,28 @@ public class CodegenConstants {
 
     public static final String REMOVE_OPERATION_ID_PREFIX = "removeOperationIdPrefix";
     public static final String REMOVE_OPERATION_ID_PREFIX_DESC = "Remove prefix of operationId, e.g. config_getId => getId";
+
+    public static final String WITH_XML = "withXml";
+    public static final String DEBUG_SWAGGER = "debugSwagger";
+    public static final String DEBUG_OPERATIONS = "debugOperations";
+    public static final String DEBUG_MODELS = "debugModels";
+    public static final String DEBUG_SUPPORTING_FILES = "debugSupportingFiles";
+    public static final String APIS = "apis";
+
+    public static final Set<String> KEYS = ImmutableSet.of(API_PACKAGE, MODEL_PACKAGE, TEMPLATE_DIR, ALLOW_UNICODE_IDENTIFIERS,
+            INVOKER_PACKAGE, PHP_INVOKER_PACKAGE, PERL_MODULE_NAME, PYTHON_PACKAGE_NAME,
+            GROUP_ID, ARTIFACT_ID, ARTIFACT_URL, ARTIFACT_DESCRIPTION,
+            SCM_CONNECTION, SCM_DEVELOPER_CONNECTION, SCM_URL,
+            DEVELOPER_NAME, DEVELOPER_EMAIL, DEVELOPER_ORGANIZATION, DEVELOPER_ORGANIZATION_URL,
+            LICENSE_NAME, LICENSE_URL,
+            SOURCE_FOLDER, IMPL_FOLDER,
+            LOCAL_VARIABLE_PREFIX, SERIALIZABLE_MODEL, SERIALIZE_BIG_DECIMAL_AS_STRING,
+            LIBRARY, SORT_PARAMS_BY_REQUIRED_FLAG, USE_DATETIME_OFFSET, ENSURE_UNIQUE_PARAMS,
+            PROJECT_NAME, PACKAGE_NAME, PACKAGE_VERSION, PACKAGE_TITLE, PACKAGE_PRODUCTNAME, PACKAGE_DESCRIPTION, PACKAGE_COMPANY, PACKAGE_AUTHORS, PACKAGE_COPYRIGHT, POD_VERSION,
+            OPTIONAL_METHOD_ARGUMENT, OPTIONAL_ASSEMBLY_INFO, USE_COLLECTION, INTERFACE_PREFIX, RETURN_ICOLLECTION, OPTIONAL_PROJECT_FILE, OPTIONAL_PROJECT_GUID, MODEL_PROPERTY_NAMING, DOTNET_FRAMEWORK,
+            MODEL_NAME_PREFIX, MODEL_NAME_SUFFIX, OPTIONAL_EMIT_DEFAULT_VALUES, GIT_USER_ID, GIT_REPO_ID, RELEASE_NOTE, HTTP_USER_AGENT, SUPPORTS_ES6, EXCLUDE_TESTS,
+            GENERATE_APIS, GENERATE_API_DOCS, GENERATE_SUPPORTING_FILES, SUPPORTING_FILES,
+            GENERATE_API_TESTS, GENERATE_MODELS, MODELS_TO_GENERATE, GENERATE_MODEL_DOCS, GENERATE_MODEL_TESTS, HIDE_GENERATION_TIMESTAMP, GENERATE_PROPERTY_CHANGED,
+            NON_PUBLIC_API, IGNORE_FILE_OVERRIDE, REMOVE_OPERATION_ID_PREFIX,
+            WITH_XML, DEBUG_SWAGGER, DEBUG_OPERATIONS, DEBUG_MODELS, DEBUG_SUPPORTING_FILES, APIS);
 }

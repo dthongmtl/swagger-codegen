@@ -70,24 +70,14 @@ public class StaticHtmlTagsTest {
             }
         };
         codegenConfig.setOutputDir(folder.getRoot().getAbsolutePath());
-            
         ClientOptInput clientOptInput = new ClientOptInput().opts(new ClientOpts()).swagger(swagger)
                 .config(codegenConfig);
 
-        final String apisBackup = System.setProperty("apis", capitalCommatizedTags);
-        try {
-            DefaultGenerator gen = new DefaultGenerator();
-            gen.opts(clientOptInput);
-            gen.generate();
-            assertEquals(seenOperations.isEmpty(), false, 
-                    "something has been changed in code and now code bypass the mock above...");
-        } finally {
-            if (apisBackup!=null) {
-                System.setProperty("apis", apisBackup);
-            }else{
-                System.clearProperty("apis");  
-            }
-        }
+        codegenConfig.additionalProperties().put("apis", capitalCommatizedTags);
+        DefaultGenerator gen = new DefaultGenerator();
+        gen.opts(clientOptInput);
+        gen.generate();
+        assertEquals(seenOperations.isEmpty(), false,"something has been changed in code and now code bypass the mock above...");
     }
 
     protected String pickupFewTagsAndOps(final Swagger swagger,

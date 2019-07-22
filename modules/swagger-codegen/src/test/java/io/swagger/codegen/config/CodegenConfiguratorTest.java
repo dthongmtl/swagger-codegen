@@ -47,26 +47,6 @@ public class CodegenConfiguratorTest {
     @Tested
     CodegenConfigurator configurator;
 
-    @SuppressWarnings("unused")
-    @Test
-    public void testVerbose() throws Exception {
-
-        configurator.setVerbose(true);
-
-        new StrictExpectations(System.class) {{
-            System.setProperty("debugSwagger", "");
-            times = 1;
-            System.setProperty("debugModels", "");
-            times = 1;
-            System.setProperty("debugOperations", "");
-            times = 1;
-            System.setProperty("debugSupportingFiles", "");
-            times = 1;
-        }};
-
-        setupAndRunGenericTest(configurator);
-    }
-
     @Test
     public void testTemplateDir() throws Exception {
 
@@ -76,23 +56,6 @@ public class CodegenConfiguratorTest {
         final ClientOptInput clientOptInput = setupAndRunGenericTest(configurator);
 
         assertValueInMap(clientOptInput.getConfig().additionalProperties(), CodegenConstants.TEMPLATE_DIR, toAbsolutePathDir(templateDir));
-    }
-
-    @SuppressWarnings("unused")
-    @Test
-    public void testSystemProperties() throws Exception {
-
-        configurator.addSystemProperty("hello", "world")
-                .addSystemProperty("foo", "bar");
-
-        new Expectations(System.class) {{
-            System.setProperty("hello", "world");
-            times = 1;
-            System.setProperty("foo", "bar");
-            times = 1;
-        }};
-
-        setupAndRunGenericTest(configurator);
     }
 
     @Test

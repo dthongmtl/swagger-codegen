@@ -121,8 +121,8 @@ public class GenerateTest {
         };
     }
 
-    @Test
-    public void testSystemProperties() throws Exception {
+    @Test(enabled = false, description = "disabled: system properties support is replaced by additionalProperties for multi threaded support.")
+    public void testSystemPropertiesConverted() throws Exception {
 
         setupAndRunGenericTest("-D", "hello=world,foo=bar");
 

@@ -1,18 +1,22 @@
 package io.swagger.codegen.languages;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.codegen.*;
-import io.swagger.models.Operation;
+import io.swagger.codegen.CodegenModel;
+import io.swagger.codegen.CodegenOperation;
+import io.swagger.codegen.CodegenProperty;
+import io.swagger.codegen.CodegenType;
+import io.swagger.codegen.SupportingFile;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
-import io.swagger.util.Yaml;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class UndertowCodegen extends AbstractJavaCodegen {
 
@@ -37,9 +41,8 @@ public class UndertowCodegen extends AbstractJavaCodegen {
         apiDocTemplateFiles.remove("api_doc.mustache");
 
 
-        apiPackage = System.getProperty("swagger.codegen.undertow.apipackage", "io.swagger.handler");
-        modelPackage = System.getProperty("swagger.codegen.undertow.modelpackage", "io.swagger.model");
-
+        apiPackage = getOrDefaultFromAdditionalProperties("swagger.codegen.undertow.apipackage", "io.swagger.handler");
+        modelPackage = getOrDefaultFromAdditionalProperties("swagger.codegen.undertow.modelpackage", "io.swagger.model");
         additionalProperties.put("title", title);
     }
 

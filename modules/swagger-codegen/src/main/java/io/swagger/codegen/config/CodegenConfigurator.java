@@ -385,7 +385,6 @@ public class CodegenConfigurator implements Serializable {
         Validate.notEmpty(inputSpec, "input spec must be specified");
 
         setVerboseFlags();
-        setSystemProperties();
 
         CodegenConfig config = CodegenConfigLoader.forName(lang);
 
@@ -468,17 +467,6 @@ public class CodegenConfigurator implements Serializable {
                 "\n - [debugModels] prints models passed to the template engine" +
                 "\n - [debugOperations] prints operations passed to the template engine" +
                 "\n - [debugSupportingFiles] prints additional data passed to the template engine");
-
-        System.setProperty("debugSwagger", "");
-        System.setProperty("debugModels", "");
-        System.setProperty("debugOperations", "");
-        System.setProperty("debugSupportingFiles", "");
-    }
-
-    private void setSystemProperties() {
-        for (Map.Entry<String, String> entry : systemProperties.entrySet()) {
-            System.setProperty(entry.getKey(), entry.getValue());
-        }
     }
 
     private static String toAbsolutePathStr(String path) {
